@@ -20,11 +20,11 @@ namespace TowerOfWitch
         static IGameService<Update> gameService;
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            Console.WriteLine("From:     " + update.Message.From.Username + "  -->  " + update.Message.Text);
+            
             //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(update));
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
             {
-                
+                Console.WriteLine("From:     " + update.Message.From.Username + "  -->  " + update.Message.Text);
                 var message = update.Message;
                 if (message.Text.ToLower() == "/start")
                 {
@@ -74,6 +74,7 @@ namespace TowerOfWitch
                     
                     return;
                 }
+                
                 int len = message.Text.Split().Length;
                 if(len == 1)
                 {
@@ -82,6 +83,7 @@ namespace TowerOfWitch
                     if (isNumber)
                     {
                         gameService.DoMove(update);
+                        return;
                     }
                 }
                 if(len == 2)
@@ -89,10 +91,12 @@ namespace TowerOfWitch
                     if(message.Text.Split()[0].ToLower() == "/create")
                     {
                         gameService.CreateGame(update);
+                        return;
                     }
                     if (message.Text.Split()[0].ToLower() == "/accept")
                     {
                         gameService.AcceptGame(update);
+                        return;
                     }
                 }
                 

@@ -10,8 +10,8 @@ namespace TowerOfWitch.Interfaces
     interface IPlayersService
     {
         public Task<int> RegisterPlayerAsync(Player player);
-        public Task<Player> GetPlayerAsync(long id);
-        public Task<Player> FindPlayerByUserNameAsync(string UserName);
-        public Task<bool> UpdatePlayerAsync(Player player);
+        public Player GetPlayerByID(long id);
+        public Player FindPlayerByUserName(string UserName);
+        public Task<int> UpdatePlayerAsync(Player player);
     }
 }
