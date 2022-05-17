@@ -40,19 +40,20 @@ namespace TowerOfWitch.Services
             }
         }
 
-        public Task<Player> FindPlayerByUserNameAsync(string UserName)
+        public Player FindPlayerByUserName(string UserName)
         {
-            throw new NotImplementedException();
+            return dbContext.Players.Where(el => el.UserName == UserName).FirstOrDefault();
         }
 
-        public Task<Player> GetPlayerAsync(long id)
+        public Player GetPlayerByID(long id)
         {
-            throw new NotImplementedException();
+            return dbContext.Players.Where(el => el.UserId == id).FirstOrDefault();
         }
 
-        public Task<bool> UpdatePlayerAsync(Player player)
+        public Task<int> UpdatePlayerAsync(Player player)
         {
-            throw new NotImplementedException();
+             dbContext.Update(player);
+             return dbContext.SaveChangesAsync();
         }
 
         

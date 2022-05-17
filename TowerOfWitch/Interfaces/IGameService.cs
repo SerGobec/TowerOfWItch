@@ -11,7 +11,9 @@ namespace TowerOfWitch.Interfaces
         public void CreateGame(T t);
         public void AcceptGame(T t);
         public void DoMove(T t);
-        public void CheckForWiner(T t);
+        public void CheckForWiner();
+        public void Resign(T t);
+        public void Reject(T t);
         
     }
 }

@@ -16,5 +16,6 @@ namespace TowerOfWitch.Models
         public int WinGame { get; set; }
         public uint Coins { get; set; }
         public bool InGame { get; set; }
+        public int SymbolCode { get; set; }
     }
 }
