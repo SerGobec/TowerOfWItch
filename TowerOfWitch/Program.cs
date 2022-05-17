@@ -98,6 +98,11 @@ namespace TowerOfWitch
                         gameService.AcceptGame(update);
                         return;
                     }
+                    if (message.Text.Split()[0].ToLower() == "/reject")
+                    {
+                        gameService.Reject(update);
+                        return;
+                    }
                 }
                 
 

@@ -22,40 +22,44 @@ namespace TowerOfWitch.Services
             this.playersService = players;
         }
 
-        public void AcceptGame(Update update)
+        public async void AcceptGame(Update update)
         {
             Player player1 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1]);
             Player player2 = playersService.GetPlayerByID(update.Message.From.Id);
             if(player1 == null || player1.InGame)
             {
-                _bot.SendTextMessageAsync(update.Message.From.Id, "Your opponent is playing now!" +
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "Your opponent is playing now!" +
                     "\nOr he was killed by another witcher👥");
+                return;
             }
             if(player2 == null)
             {
-                _bot.SendTextMessageAsync(update.Message.From.Id, "We can`t find you in system🌚" +
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "We can`t find you in system🌚" +
                     "\nMay be you forgot to register?" +
                     "\nWrite /reg");
+                return;
             }
             if (player2.InGame)
             {
-                _bot.SendTextMessageAsync(update.Message.From.Id, "You are alredy playing🐀");
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "You are alredy playing🐀");
+                return;
             }
             GameModel game = _games.Where(el => el.Players.Contains(player1) &&
                                                 el.Players.Contains(player2)).FirstOrDefault();
             if(game == null)
             {
-                _bot.SendTextMessageAsync(update.Message.From.Id, "We can`t find challange from your opponent🌚" +
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "We can`t find challange from your opponent🌚" +
                     "\nYou can create challenge" +
                     "\nWrite " +
                     "\n/create OpponentUserName");
+                return;
             }
             game.accepted = true;
             Random rnd = new Random();
             game.Turn = (byte)rnd.Next(0,1);
             for(int i = 0;i < 2; i++)
             {
-                _bot.SendTextMessageAsync(game.Players[i].UserId, "Game has been started!!!" +
+                await _bot.SendTextMessageAsync(game.Players[i].UserId, "Game has been started!!!" +
                     "\n " + SymbolService.GetSymbolByCode(player1.SymbolCode)+ " "+ player1.UserName +
                     " --- " + player2.UserName + " " + SymbolService.GetSymbolByCode(player2.SymbolCode)+ "" +
                     "\n" + game.WriteArea() +
@@ -111,9 +115,42 @@ namespace TowerOfWitch.Services
             //
         }
 
-        public void Reject(Update t)
+        public async void Reject(Update update)
         {
-            //
+            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1]);
+            Player player1 = playersService.GetPlayerByID(update.Message.From.Id);
+            if (player2 == null)
+            {
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "We can`t find your opponent..." +
+                    "\nOr he was killed by another witcher👥");
+                return;
+            }
+            if (player1 == null)
+            {  
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "We can`t find you in system🌚" +
+                    "\nMay be you forgot to register?" +
+                    "\nWrite /reg");
+                return;
+            }
+            GameModel game = _games.Where(el => el.Players.Contains(player1) &&
+                                           el.Players.Contains(player2)).FirstOrDefault();
+            if(game == null)
+            {
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "We can`t find this game🌚" +
+                    "\nSo.. You are free for now🚶");
+                return;
+            }
+            if (game.accepted)
+            {
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "You can`t reject game that was alreade accepted..." +
+                    "\nBut. You can resign🙈" +
+                    "\nWrite /resign");
+                return;
+            }
+
+            await _bot.SendTextMessageAsync(update.Message.From.Id, "Game was rejected.");
+            await _bot.SendTextMessageAsync(player2.UserId, player1.UserName + " rejected your challange.");
+            _games.Remove(game);
         }
 
         public void Resign(Update t)
