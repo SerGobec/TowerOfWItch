@@ -20,8 +20,7 @@ namespace TowerOfWitch
         static IGameService<Update> gameService;
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            // Некоторые действия
-            Console.WriteLine("From:     " + update.Message.From.Username + "---" + update.Message.Text);
+            Console.WriteLine("From:     " + update.Message.From.Username + "  -->  " + update.Message.Text);
             //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(update));
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
             {
@@ -114,16 +113,17 @@ namespace TowerOfWitch
 
         static void Main(string[] args)
         {
-            string? token;
+            string token = null;
             using (StreamReader reader = new StreamReader("token.txt"))
             {
                 
-                while ((token = reader.ReadLine()) != null)
+                while (reader.Peek() != -1)
                 {
-                    Console.WriteLine(token);
+                    token = reader.ReadLine();
                 }
                 
             }
+            Console.WriteLine(token);
             if(token == null)
             {
                 Console.WriteLine("Token file not found :(");
@@ -132,7 +132,7 @@ namespace TowerOfWitch
             bot = new TelegramBotClient(token);
             playersService = new PlayersService();
             gameService = new GameService(bot, playersService);
-            //bot = new TelegramBotClient("");
+
             Console.WriteLine("Запущен бот " + bot.GetMeAsync().Result.FirstName);
 
             var cts = new CancellationTokenSource();
