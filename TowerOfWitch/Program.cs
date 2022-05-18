@@ -41,7 +41,7 @@ namespace TowerOfWitch
                 if (message.Text.ToLower() == "/reg")
                 {
                     Random rnd = new Random();
-                    int symb = rnd.Next(1, SymbolService.Symbols.Count + 1);
+                    byte symb = (byte)rnd.Next(1, SymbolService.Symbols.Count + 1);
                     Player player = new Player
                     {
                         UserId = message.From.Id,

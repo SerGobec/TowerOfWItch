@@ -151,7 +151,7 @@ namespace TowerOfWitch.Services
 
         public Player CheckForWiner(GameModel game)
         {
-            string[,] area = game.Area;
+            byte[,] area = game.Area;
             for(int i = 0; i < 7; i++)
             {
                 for(int j = 0; j < 4; j++)
@@ -159,9 +159,9 @@ namespace TowerOfWitch.Services
                     if(area[i, j] == area[i, j + 1] &&
                        area[i, j] == area[i, j + 2] &&
                        area[i, j] == area[i, j + 3] &&
-                       area[i, j] != "⬜")
+                       area[i, j] != 0)
                     {
-                        int key = SymbolService.GetCodeBySymbol(area[i,j]);
+                        int key = area[i,j];
                         return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
                     }
                 }
@@ -172,26 +172,26 @@ namespace TowerOfWitch.Services
                 for (int j = 0; j < 7; j++)
                 {
                     if (area[i, j] == area[i + 1, j] &&
-                       area[i, j] == area[i + 1, j] &&
-                       area[i, j] == area[i + 1, j] &&
-                       area[i, j] != "⬜")
+                       area[i, j] == area[i + 2, j] &&
+                       area[i, j] == area[i + 3, j] &&
+                       area[i, j] != 0)
                     {
-                        int key = SymbolService.GetCodeBySymbol(area[i, j]);
+                        int key = area[i, j];
                         return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
                     }
                 }
             }
 
-                    for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 for(int j = 0;j < 4; j++)
                 {
                     if (area[i, j] == area[i + 1, j + 1] &&
                        area[i, j] == area[i + 2, j + 2] &&
                        area[i, j] == area[i + 3, j + 3] &&
-                       area[i, j] != "⬜")
+                       area[i, j] != 0)
                     {
-                        int key = SymbolService.GetCodeBySymbol(area[i, j]);
+                        int key = area[i, j];
                         return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
                     }
                 }
@@ -204,9 +204,9 @@ namespace TowerOfWitch.Services
                     if (area[i, j] == area[i + 1, j - 1] &&
                        area[i, j] == area[i + 2, j - 2] &&
                        area[i, j] == area[i + 3, j - 3] &&
-                       area[i, j] != "⬜")
+                       area[i, j] != 0)
                     {
-                        int key = SymbolService.GetCodeBySymbol(area[i, j]);
+                        int key = area[i, j];
                         return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
                     }
                 }
@@ -242,7 +242,7 @@ namespace TowerOfWitch.Services
                 await _bot.SendTextMessageAsync(update.Message.From.Id, "That is not your turn🐼");
                 return;
             }
-            if(game.Area[0, num - 1] != "⬜")
+            if(game.Area[0, num - 1] != 0)
             {
                 await _bot.SendTextMessageAsync(update.Message.From.Id, "You can`t put your figure higher👅");
                 return;
@@ -251,9 +251,9 @@ namespace TowerOfWitch.Services
             Player winner = null;
             for (int i = 6; i >= 0; i--)
             {
-                if(game.Area[i, num - 1] == "⬜")
+                if(game.Area[i, num - 1] == 0)
                 {
-                    game.Area[i, num - 1] = SymbolService.GetSymbolByCode(player.SymbolCode);
+                    game.Area[i, num - 1] = player.SymbolCode;
                     winner = CheckForWiner(game);
                     if (winner != null)
                     {
