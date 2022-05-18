@@ -26,7 +26,7 @@ namespace TowerOfWitch.Services
 
         public async void AcceptGame(Update update)
         {
-            Player player1 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1]);
+            Player player1 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1].Replace("@", ""));
             Player player2 = playersService.GetPlayerByID(update.Message.From.Id);
             if(player1 == null || player1.InGame)
             {
@@ -83,7 +83,7 @@ namespace TowerOfWitch.Services
                 await _bot.SendTextMessageAsync(player1.UserId, "You are already in game!");
                 return;
             }
-            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1]);
+            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1].Replace("@", ""));
             if(player2 == null)
             {
                 await _bot.SendTextMessageAsync(player1.UserId, "Your opponent not found...\n" +
@@ -108,7 +108,7 @@ namespace TowerOfWitch.Services
 
         public async void Reject(Update update)
         {
-            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1]);
+            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1].Replace("@", ""));
             Player player1 = playersService.GetPlayerByID(update.Message.From.Id);
             if (player2 == null)
             {
