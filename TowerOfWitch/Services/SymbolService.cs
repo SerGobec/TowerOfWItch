@@ -26,5 +26,13 @@ namespace TowerOfWitch.Services
             }
             return "X";
         }
+        public static int GetCodeBySymbol(string symb)
+        {
+            if (Symbols.ContainsValue(symb))
+            {
+                return Symbols.FirstOrDefault(el => el.Value == symb).Key;
+            }
+            return -1;
+        }
     }
 }
