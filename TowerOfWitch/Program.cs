@@ -26,61 +26,69 @@ namespace TowerOfWitch
             {
                 Console.WriteLine("From:     " + update.Message.From.Username + "  -->  " + update.Message.Text);
                 var message = update.Message;
-                if (message.Text.ToLower() == "/start")
-                {
-                    await botClient.SendTextMessageAsync(message.From.Id, "Wellcome witcher!" +
-                        "\nTelegram game Tower of witcher for everyone!." +
-                        "\nWelcome.👤" +
-                        "\n---💀----------" +
-                        "\nFor register in base write /reg." +
-                        "\nThis will let your friend call you for a game." +
-                        "\n---------👽----" +
-                        "\nFor ..");
-                    return;
-                }
-                if (message.Text.ToLower() == "/reg")
-                {
-                    Random rnd = new Random();
-                    byte symb = (byte)rnd.Next(1, SymbolService.Symbols.Count + 1);
-                    Player player = new Player
-                    {
-                        UserId = message.From.Id,
-                        Name = message.From.FirstName,
-                        UserName = message.From.Username,
-                        CountOfGame = 0,
-                        WinGame = 0,
-                        InGame = false,
-                        Coins = 0,
-                        SymbolCode = symb
-                    };
-                    int result = await playersService.RegisterPlayerAsync(player);
-                    switch (result)
-                    {
-                        case 1:
-                            await botClient.SendTextMessageAsync(message.From.Id, "You are registered now!\n" +
-                                "Wellcome to family witcher 👤");
-                            break;
-                        case 2:
-                            await botClient.SendTextMessageAsync(message.From.Id, "You`ve been already registered!\n" +
-                                "Brother? 👤");
-                            break;
-                        case 3:
-                            await botClient.SendTextMessageAsync(message.From.Id, "You must create username in telegram.\n" +
-                                "Or... You want us to call you bi-bu-bip..? 👤");
-                            break;
-                        default:
-                            await botClient.SendTextMessageAsync(message.From.Id, "Something wrong...\n" +
-                                "I can`t read some symbol...\n" +
-                                "may be wrong magic book...👤");
-                            break;
-                    }
-                    
-                    return;
-                }
+               
                 
+
                 int len = message.Text.Split().Length;
                 if(len == 1)
                 {
+                    if (message.Text.ToLower() == "/start")
+                    {
+                        await botClient.SendTextMessageAsync(message.From.Id, "Wellcome witcher!" +
+                            "\nTelegram game Tower of witcher for everyone!." +
+                            "\nWelcome.👤" +
+                            "\n---💀----------" +
+                            "\nFor register in base write /reg." +
+                            "\nThis will let your friend call you for a game." +
+                            "\n---------👽----" +
+                            "\nFor ..");
+                        return;
+                    }
+                    if (message.Text.ToLower() == "/reg")
+                    {
+                        Random rnd = new Random();
+                        byte symb = (byte)rnd.Next(1, SymbolService.Symbols.Count + 1);
+                        Player player = new Player
+                        {
+                            UserId = message.From.Id,
+                            Name = message.From.FirstName,
+                            UserName = message.From.Username,
+                            CountOfGame = 0,
+                            WinGame = 0,
+                            InGame = false,
+                            Coins = 0,
+                            SymbolCode = symb
+                        };
+                        int result = await playersService.RegisterPlayerAsync(player);
+                        switch (result)
+                        {
+                            case 1:
+                                await botClient.SendTextMessageAsync(message.From.Id, "You are registered now!\n" +
+                                    "Wellcome to family witcher 👤");
+                                break;
+                            case 2:
+                                await botClient.SendTextMessageAsync(message.From.Id, "You`ve been already registered!\n" +
+                                    "Brother? 👤");
+                                break;
+                            case 3:
+                                await botClient.SendTextMessageAsync(message.From.Id, "You must create username in telegram.\n" +
+                                    "Or... You want us to call you bi-bu-bip..? 👤");
+                                break;
+                            default:
+                                await botClient.SendTextMessageAsync(message.From.Id, "Something wrong...\n" +
+                                    "I can`t read some symbol...\n" +
+                                    "may be wrong magic book...👤");
+                                break;
+                        }
+
+                        return;
+                    }
+                    if (message.Text.ToLower() == "/resign")
+                    {
+                        gameService.Resign(update);
+                        return;
+                    }
+
                     int number;
                     bool isNumber = int.TryParse(message.Text, out number);
                     if (isNumber)
@@ -107,12 +115,8 @@ namespace TowerOfWitch
                         return;
                     }
                 }
- 
-
-                await botClient.SendTextMessageAsync(message.From.Id, len + "");
-            }
-
-            
+                await botClient.SendTextMessageAsync(message.From.Id, len + " words🤨");
+            } 
         }
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

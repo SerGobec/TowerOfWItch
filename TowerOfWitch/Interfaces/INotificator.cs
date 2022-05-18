@@ -11,5 +11,7 @@ namespace TowerOfWitch.Interfaces
     {
         public Task NotificateWinnerAsync(Player pl);
         public Task NotificateLoserAsync(Player pl);
+        public Task NotificateResignedAsync(Player pl);
     }
+    
 }
