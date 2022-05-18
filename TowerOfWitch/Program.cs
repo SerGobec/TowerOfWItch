@@ -82,7 +82,7 @@ namespace TowerOfWitch
                     bool isNumber = int.TryParse(message.Text, out number);
                     if (isNumber)
                     {
-                        gameService.DoMove(update);
+                        gameService.DoMove(update, number);
                         return;
                     }
                 }
