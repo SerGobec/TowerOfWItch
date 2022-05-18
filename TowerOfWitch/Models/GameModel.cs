@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TowerOfWitch.Services;
 
 namespace TowerOfWitch.Models
 {
@@ -18,12 +19,12 @@ namespace TowerOfWitch.Models
             {
                 for(int j = 0;j < 7; j++)
                 {
-                    Area[i, j] = "⬜";
+                    Area[i, j] = 0;
                 }
             }
         }
         public List<Player> Players { get; }
-        public string[,] Area = new string[7, 7];
+        public byte[,] Area = new byte[7, 7];
         public byte Turn { get; set; }
         public bool accepted { get; set; }
 
@@ -35,7 +36,7 @@ namespace TowerOfWitch.Models
                 result += "| ";
                 for(int j = 0;j < 7; j++)
                 {
-                    result += Area[i, j];
+                    result += SymbolService.GetSymbolByCode(Area[i,j]);
                 }
                 result += " |\n";
             }

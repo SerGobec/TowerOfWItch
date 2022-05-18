@@ -10,16 +10,18 @@ using TowerOfWitch.Models;
 
 namespace TowerOfWitch.Services
 {
-    public class GameService : IGameService<Update>
+    public class GameService : IGameService<Update>,INotificator
     {
         List<GameModel> _games = new List<GameModel>();
         TelegramBotClient _bot;
         PlayersService playersService;
+        Random _rnd;
 
         public GameService(ITelegramBotClient bot, PlayersService players)
         {
             this._bot = (TelegramBotClient)bot;
             this.playersService = players;
+            this._rnd = new Random();
         }
 
         public async void AcceptGame(Update update)
@@ -55,8 +57,8 @@ namespace TowerOfWitch.Services
                 return;
             }
             game.accepted = true;
-            Random rnd = new Random();
-            game.Turn = (byte)rnd.Next(0,1);
+            
+            game.Turn = (byte)_rnd.Next(0,2);
             for(int i = 0;i < 2; i++)
             {
                 await _bot.SendTextMessageAsync(game.Players[i].UserId, "Game has been started!!!" +
@@ -64,8 +66,7 @@ namespace TowerOfWitch.Services
                     " --- " + player2.UserName + " " + SymbolService.GetSymbolByCode(player2.SymbolCode)+ "" +
                     "\n" + game.WriteArea() +
                     "\nThe first player to act is: " + game.Players[game.Turn].UserName); 
-            }
-                
+            } 
         }
 
         public async void CreateGame(Update update)
@@ -145,12 +146,12 @@ namespace TowerOfWitch.Services
 
         public void Resign(Update t)
         {
-            //
+            
         }
 
         public Player CheckForWiner(GameModel game)
         {
-            string[,] area = game.Area;
+            byte[,] area = game.Area;
             for(int i = 0; i < 7; i++)
             {
                 for(int j = 0; j < 4; j++)
@@ -158,31 +159,9 @@ namespace TowerOfWitch.Services
                     if(area[i, j] == area[i, j + 1] &&
                        area[i, j] == area[i, j + 2] &&
                        area[i, j] == area[i, j + 3] &&
-                       area[i, j] != "⬜")
+                       area[i, j] != 0)
                     {
-                        int key = SymbolService.GetCodeBySymbol(area[i,j]);
-                        return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
-                    }
-                    if(area[j, i] == area[j + 3, i] &&
-                       area[j, i] == area[j + 1, i] &&
-                       area[j, i] == area[j + 2, i] &&
-                       area[j, i] != "⬜")
-                    {
-                        int key = SymbolService.GetCodeBySymbol(area[j, i]);
-                        return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
-                    }
-                }
-            }
-            for(int i = 0; i < 4; i++)
-            {
-                for(int j = 0;j < 4; j++)
-                {
-                    if (area[i, j] == area[i + 1, j + 1] &&
-                       area[i, j] == area[i + 2, j + 2] &&
-                       area[i, j] == area[i + 3, j+ 3] &&
-                       area[i, j] != "⬜")
-                    {
-                        int key = SymbolService.GetCodeBySymbol(area[j, i]);
+                        int key = area[i,j];
                         return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
                     }
                 }
@@ -190,14 +169,44 @@ namespace TowerOfWitch.Services
 
             for (int i = 0; i < 4; i++)
             {
-                for (int j = 3; j < 7; j++)
+                for (int j = 0; j < 7; j++)
+                {
+                    if (area[i, j] == area[i + 1, j] &&
+                       area[i, j] == area[i + 2, j] &&
+                       area[i, j] == area[i + 3, j] &&
+                       area[i, j] != 0)
+                    {
+                        int key = area[i, j];
+                        return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
+                    }
+                }
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                for(int j = 0;j < 4; j++)
+                {
+                    if (area[i, j] == area[i + 1, j + 1] &&
+                       area[i, j] == area[i + 2, j + 2] &&
+                       area[i, j] == area[i + 3, j + 3] &&
+                       area[i, j] != 0)
+                    {
+                        int key = area[i, j];
+                        return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
+                    }
+                }
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 6; j > 2; j--)
                 {
                     if (area[i, j] == area[i + 1, j - 1] &&
                        area[i, j] == area[i + 2, j - 2] &&
                        area[i, j] == area[i + 3, j - 3] &&
-                       area[i, j] != "⬜")
+                       area[i, j] != 0)
                     {
-                        int key = SymbolService.GetCodeBySymbol(area[j, i]);
+                        int key = area[i, j];
                         return game.Players.Where(el => el.SymbolCode == key).FirstOrDefault();
                     }
                 }
@@ -233,7 +242,7 @@ namespace TowerOfWitch.Services
                 await _bot.SendTextMessageAsync(update.Message.From.Id, "That is not your turn🐼");
                 return;
             }
-            if(game.Area[0, num - 1] != "⬜")
+            if(game.Area[0, num - 1] != 0)
             {
                 await _bot.SendTextMessageAsync(update.Message.From.Id, "You can`t put your figure higher👅");
                 return;
@@ -242,12 +251,13 @@ namespace TowerOfWitch.Services
             Player winner = null;
             for (int i = 6; i >= 0; i--)
             {
-                if(game.Area[i, num - 1] == "⬜")
+                if(game.Area[i, num - 1] == 0)
                 {
-                    game.Area[i, num - 1] = SymbolService.GetSymbolByCode(player.SymbolCode);
+                    game.Area[i, num - 1] = player.SymbolCode;
                     winner = CheckForWiner(game);
                     if (winner != null)
                     {
+                        Console.WriteLine("Winner is not null");
                         for (int j = 0; j < 2; j++)
                         {
                             await _bot.SendTextMessageAsync(game.Players[j].UserId, winner.UserName + "is winner!");
@@ -255,6 +265,12 @@ namespace TowerOfWitch.Services
                             await playersService.UpdatePlayerAsync(game.Players[j]);
                         }
                         _games.Remove(game);
+                        await NotificateWinnerAsync(winner);
+                        Player loser = game.Players.Where(el => el.Id != winner.Id).FirstOrDefault();
+                        if(loser != null)
+                        {
+                            await NotificateLoserAsync(loser);
+                        }
                         break;
                     }
                     switch (game.Turn)
@@ -273,7 +289,36 @@ namespace TowerOfWitch.Services
             {
                 await _bot.SendTextMessageAsync(game.Players[i].UserId, game.WriteArea());
             }
-            
+        }
+
+        public async Task NotificateWinnerAsync(Player pl)
+        {
+            uint coins = (uint)_rnd.Next(10, 20);
+            await _bot.SendTextMessageAsync(pl.UserId, "Congratulations!" +
+                "\nYou have just won, and it`s your award:" +
+                "\n" + coins + "🍊" +
+                "\nYou can spend it for buying new sign." +
+                "\nWrite /shop" +
+                "\nFor check your bug write /money");
+            pl.CountOfGame += 1;
+            pl.Coins += coins;
+            pl.WinGame += 1;
+            await playersService.UpdatePlayerAsync(pl);
+        }
+
+        public async Task NotificateLoserAsync(Player pl)
+        {
+            uint coins = (uint)_rnd.Next(4, 12);
+            await _bot.SendTextMessageAsync(pl.UserId, "For this time, you lose..." +
+                "\nBut you will be back..." +
+                "\nIn batle you`ve got:" +
+                "\n" + coins + "🍊" +
+                "\nYou can spend it for buying new sign." +
+                "\nWrite /shop" +
+                "\nFor check your bug write /money");
+            pl.CountOfGame += 1;
+            pl.Coins += coins;
+            await playersService.UpdatePlayerAsync(pl);
         }
     }
 }

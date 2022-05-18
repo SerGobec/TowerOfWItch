@@ -40,6 +40,8 @@ namespace TowerOfWitch
                 }
                 if (message.Text.ToLower() == "/reg")
                 {
+                    Random rnd = new Random();
+                    byte symb = (byte)rnd.Next(1, SymbolService.Symbols.Count + 1);
                     Player player = new Player
                     {
                         UserId = message.From.Id,
@@ -48,7 +50,8 @@ namespace TowerOfWitch
                         CountOfGame = 0,
                         WinGame = 0,
                         InGame = false,
-                        Coins = 0
+                        Coins = 0,
+                        SymbolCode = symb
                     };
                     int result = await playersService.RegisterPlayerAsync(player);
                     switch (result)
@@ -104,8 +107,7 @@ namespace TowerOfWitch
                         return;
                     }
                 }
-                
-
+ 
 
                 await botClient.SendTextMessageAsync(message.From.Id, len + "");
             }
