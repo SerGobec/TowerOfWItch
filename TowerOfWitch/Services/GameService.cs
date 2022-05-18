@@ -335,6 +335,17 @@ namespace TowerOfWitch.Services
             {
                 await _bot.SendTextMessageAsync(game.Players[i].UserId, game.WriteArea());
             }
+            if(game.MoveCounter == 49)
+            {
+                for(int i = 0;i < 2; i++)
+                {
+                    await _bot.SendTextMessageAsync(game.Players[i].UserId, "Wow, draw...😱🤝😰");
+                    game.Players[i].InGame = false;
+                    await playersService.UpdatePlayerAsync(game.Players[i]);
+                    await NotificateDrawAsync(game.Players[i]);
+                }
+                _games.Remove(game);
+            }
         }
 
         public async Task NotificateWinnerAsync(Player pl)
@@ -354,7 +365,7 @@ namespace TowerOfWitch.Services
 
         public async Task NotificateLoserAsync(Player pl)
         {
-            uint coins = (uint)_rnd.Next(4, 12);
+            uint coins = (uint)_rnd.Next(4, 11);
             await _bot.SendTextMessageAsync(pl.UserId, "For this time, you lose..." +
                 "\nBut you will be back..." +
                 "\nIn batle you`ve got:" +
@@ -372,6 +383,20 @@ namespace TowerOfWitch.Services
             uint coins = (uint)_rnd.Next(1, 4);
             await _bot.SendTextMessageAsync(pl.UserId, "Well, sometimes it`s painful..." +
                 "\nIn batle you`ve got:" +
+                "\n" + coins + "🍊" +
+                "\nYou can spend it for buying new sign." +
+                "\nWrite /shop" +
+                "\nFor check your bug write /money");
+            pl.CountOfGame += 1;
+            pl.Coins += coins;
+            await playersService.UpdatePlayerAsync(pl);
+        }
+
+        public async Task NotificateDrawAsync(Player pl)
+        {
+            uint coins = (uint)_rnd.Next(7, 13);
+            await _bot.SendTextMessageAsync(pl.UserId, "Draw😄" +
+                "\nBut battle was legendary, take it:" +
                 "\n" + coins + "🍊" +
                 "\nYou can spend it for buying new sign." +
                 "\nWrite /shop" +

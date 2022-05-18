@@ -23,6 +23,7 @@ namespace TowerOfWitch.Services
             {10, "💿" },
             {11, "📛" },
             {12, "🔞" },
+            {13, "🌿" }
         };
         public static string GetSymbolByCode(int code)
         {
