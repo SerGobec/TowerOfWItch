@@ -9,25 +9,28 @@ namespace TowerOfWitch.Models
 {
     public class GameModel
     {
+        
+        public List<Player> Players { get; }
+        public byte[,] Area = new byte[7, 7];
+        public byte Turn { get; set; }
+        public bool Accepted { get; set; }
+        public byte MoveCounter { get; set; }
+
         public GameModel(Player pl1, Player pl2)
         {
+            MoveCounter = 0;
             Players = new List<Player>();
             Players.Add(pl1);
             Players.Add(pl2);
-            accepted = false;
-            for(int i = 0; i < 7;i++)
+            Accepted = false;
+            for (int i = 0; i < 7; i++)
             {
-                for(int j = 0;j < 7; j++)
+                for (int j = 0; j < 7; j++)
                 {
                     Area[i, j] = 0;
                 }
             }
         }
-        public List<Player> Players { get; }
-        public byte[,] Area = new byte[7, 7];
-        public byte Turn { get; set; }
-        public bool accepted { get; set; }
-
         public string WriteArea()
         {
             string result = "--------------------------------\n";

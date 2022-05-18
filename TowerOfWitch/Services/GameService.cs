@@ -26,7 +26,7 @@ namespace TowerOfWitch.Services
 
         public async void AcceptGame(Update update)
         {
-            Player player1 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1]);
+            Player player1 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1].Replace("@", ""));
             Player player2 = playersService.GetPlayerByID(update.Message.From.Id);
             if(player1 == null || player1.InGame)
             {
@@ -56,7 +56,7 @@ namespace TowerOfWitch.Services
                     "\n/create OpponentUserName");
                 return;
             }
-            game.accepted = true;
+            game.Accepted = true;
             
             game.Turn = (byte)_rnd.Next(0,2);
             for(int i = 0;i < 2; i++)
@@ -83,7 +83,7 @@ namespace TowerOfWitch.Services
                 await _bot.SendTextMessageAsync(player1.UserId, "You are already in game!");
                 return;
             }
-            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1]);
+            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1].Replace("@", ""));
             if(player2 == null)
             {
                 await _bot.SendTextMessageAsync(player1.UserId, "Your opponent not found...\n" +
@@ -108,7 +108,7 @@ namespace TowerOfWitch.Services
 
         public async void Reject(Update update)
         {
-            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1]);
+            Player player2 = playersService.FindPlayerByUserName(update.Message.Text.Split()[1].Replace("@", ""));
             Player player1 = playersService.GetPlayerByID(update.Message.From.Id);
             if (player2 == null)
             {
@@ -131,7 +131,7 @@ namespace TowerOfWitch.Services
                     "\nSo.. You are free for now🚶");
                 return;
             }
-            if (game.accepted)
+            if (game.Accepted)
             {
                 await _bot.SendTextMessageAsync(update.Message.From.Id, "You can`t reject game that was alreade accepted..." +
                     "\nBut. You can resign🙈" +
@@ -144,9 +144,54 @@ namespace TowerOfWitch.Services
             _games.Remove(game);
         }
 
-        public void Resign(Update t)
+        public async void Resign(Update update)
         {
-            
+            Player player = playersService.GetPlayerByID(update.Message.From.Id);
+            if (player == null)
+            {
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "We can`t find you in system🌚" +
+                    "\nMay be you forgot to register?" +
+                    "\nWrite /reg");
+                return;
+            }
+            GameModel game = _games.Where(el => el.Accepted && el.Players.Contains(player)).FirstOrDefault();
+            if (game == null)
+            {
+                await _bot.SendTextMessageAsync(update.Message.From.Id, "You aren`t playing now." +
+                    "You are free witcher. 👀");
+                return;
+            }
+
+            if(game.MoveCounter < 5)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    await _bot.SendTextMessageAsync(game.Players[j].UserId, "Game has been aborted by " + update.Message.From.FirstName);
+                    game.Players[j].InGame = false;
+                    await playersService.UpdatePlayerAsync(game.Players[j]);
+                }
+                _games.Remove(game);
+            } else
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    await _bot.SendTextMessageAsync(game.Players[j].UserId, update.Message.From.FirstName + " has resigned." );
+                    game.Players[j].InGame = false;
+                    await playersService.UpdatePlayerAsync(game.Players[j]);
+                }
+                Player winner = game.Players.Where(el => el.UserId != player.UserId).FirstOrDefault();
+                if (winner != null)
+                {
+                    await NotificateWinnerAsync(winner);
+                }
+                
+                Player loser = game.Players.Where(el => el.UserId == player.UserId).FirstOrDefault();
+                if (loser != null)
+                {
+                    await NotificateResignedAsync(loser);
+                }
+                _games.Remove(game);
+            }
         }
 
         public Player CheckForWiner(GameModel game)
@@ -225,7 +270,7 @@ namespace TowerOfWitch.Services
                     "\nWrite /reg");
                 return;
             }
-            GameModel game = _games.Where(el => el.accepted && el.Players.Contains(player)).FirstOrDefault();
+            GameModel game = _games.Where(el => el.Accepted && el.Players.Contains(player)).FirstOrDefault();
             if(game == null)
             {
                 await _bot.SendTextMessageAsync(update.Message.From.Id, "You are`t playing now." +
@@ -254,6 +299,7 @@ namespace TowerOfWitch.Services
                 if(game.Area[i, num - 1] == 0)
                 {
                     game.Area[i, num - 1] = player.SymbolCode;
+                    game.MoveCounter += 1;
                     winner = CheckForWiner(game);
                     if (winner != null)
                     {
@@ -311,6 +357,20 @@ namespace TowerOfWitch.Services
             uint coins = (uint)_rnd.Next(4, 12);
             await _bot.SendTextMessageAsync(pl.UserId, "For this time, you lose..." +
                 "\nBut you will be back..." +
+                "\nIn batle you`ve got:" +
+                "\n" + coins + "🍊" +
+                "\nYou can spend it for buying new sign." +
+                "\nWrite /shop" +
+                "\nFor check your bug write /money");
+            pl.CountOfGame += 1;
+            pl.Coins += coins;
+            await playersService.UpdatePlayerAsync(pl);
+        }
+
+        public async Task NotificateResignedAsync(Player pl)
+        {
+            uint coins = (uint)_rnd.Next(1, 4);
+            await _bot.SendTextMessageAsync(pl.UserId, "Well, sometimes it`s painful..." +
                 "\nIn batle you`ve got:" +
                 "\n" + coins + "🍊" +
                 "\nYou can spend it for buying new sign." +
