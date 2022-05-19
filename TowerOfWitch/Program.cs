@@ -89,7 +89,6 @@ namespace TowerOfWitch
                             "\nFor ..");
                         return;
                     }
-
                     if (message.Text.ToLower() == "/reg")
                     {
                         Random rnd = new Random();
@@ -193,9 +192,21 @@ namespace TowerOfWitch
                                 "\nJust write /reg 😌");
                         }
                         return;
-
                     }
-                        int number;
+                    if (message.Text.ToLower() == "/mysymb")
+                    {
+                        if (playersService.IsRegistered(message.From.Id))
+                        {
+                            await shopService.AvailableSymbol(update);
+                        }
+                        else
+                        {
+                            await botClient.SendTextMessageAsync(message.From.Id, "Some function available only for registered users..." +
+                                "\nJust write /reg 😌");
+                        }
+                        return;
+                    }
+                    int number;
                     bool isNumber = int.TryParse(message.Text, out number);
                     if (isNumber)
                     {
@@ -223,6 +234,11 @@ namespace TowerOfWitch
                     if (message.Text.Split()[0].ToLower() == "/buy")
                     {
                         await shopService.Buy(update);
+                        return;
+                    }
+                    if (message.Text.Split()[0].ToLower() == "/set")
+                    {
+                        await shopService.SetSymbol(update);
                         return;
                     }
                 }
