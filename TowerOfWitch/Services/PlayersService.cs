@@ -56,7 +56,11 @@ namespace TowerOfWitch.Services
              return dbContext.SaveChangesAsync();
         }
 
-        
+        public bool IsRegistered(long UserId)
+        {
+            Player player = dbContext.Players.Where(el=> el.UserId == UserId).FirstOrDefault();
+            return player != null;
+        }
 
         ~PlayersService()
         {

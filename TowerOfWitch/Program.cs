@@ -18,18 +18,62 @@ namespace TowerOfWitch
     {
         static ITelegramBotClient bot;
         static PlayersService playersService;
+        static PurchasesService purchasesService;
         static IGameService<Update> gameService;
+        static IShopService<Update> shopService;
+        static Random rnd = new Random();
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             
             //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(update));
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
             {
-                Console.WriteLine("From:     " + update.Message.From.Username + "  -->  " + update.Message.Text);
-                var message = update.Message;
-               
                 
 
+                Console.WriteLine("From:     " + update.Message.From.Username + "  -->  " + update.Message.Text);
+                var message = update.Message;
+                //--------------------------------
+                // Automatic registration
+                /*if (!playersService.IsRegistered(update.Message.From.Id))
+                {
+
+                    Random rnd = new Random();
+                    byte symb = (byte)rnd.Next(1, SymbolService.Symbols.Count + 1);
+                    Player player = new Player
+                    {
+                        UserId = message.From.Id,
+                        Name = message.From.FirstName,
+                        UserName = message.From.Username,
+                        CountOfGame = 0,
+                        WinGame = 0,
+                        InGame = false,
+                        Coins = 5,
+                        SymbolCode = symb
+                    };
+                    int result = await playersService.RegisterPlayerAsync(player);
+                    switch (result)
+                    {
+                        case 1:
+                            await botClient.SendTextMessageAsync(message.From.Id, "You are registered now!\n" +
+                                "Wellcome to family witcher 👤");
+                            await shopService.AddSymbolForUserAsync(update, symb);
+                            break;
+                        case 2:
+                            await botClient.SendTextMessageAsync(message.From.Id, "You`ve been already registered!\n" +
+                                "Brother? 👤");
+                            break;
+                        case 3:
+                            await botClient.SendTextMessageAsync(message.From.Id, "We have tried to register you, but you must create username in telegram.\n" +
+                                "Or... You want us to call you bi-bu-bip..? 👤");
+                            break;
+                        default:
+                            await botClient.SendTextMessageAsync(message.From.Id, "Something wrong...\n" +
+                                "I can`t read some symbol...\n" +
+                                "may be wrong magic book...👤");
+                            break;
+                    }
+                }*/
+                //--------------------------------
                 int len = message.Text.Split().Length;
                 if(len == 1)
                 {
@@ -57,7 +101,7 @@ namespace TowerOfWitch
                             CountOfGame = 0,
                             WinGame = 0,
                             InGame = false,
-                            Coins = 0,
+                            Coins = 5,
                             SymbolCode = symb
                         };
                         int result = await playersService.RegisterPlayerAsync(player);
@@ -65,7 +109,9 @@ namespace TowerOfWitch
                         {
                             case 1:
                                 await botClient.SendTextMessageAsync(message.From.Id, "You are registered now!\n" +
-                                    "Wellcome to family witcher 👤");
+                                    "Wellcome to family witcher 👤" +
+                                    "\nYour first symbol for game: " + SymbolService.GetSymbolByCode(symb));
+                                await shopService.AddSymbolForUserAsync(update, symb);
                                 break;
                             case 2:
                                 await botClient.SendTextMessageAsync(message.From.Id, "You`ve been already registered!\n" +
@@ -122,6 +168,44 @@ namespace TowerOfWitch
                             "\n<b><i>/reject Grey_P</i></b>", ParseMode.Html);
                         return;
                     }
+                    if (message.Text.ToLower() == "/money")
+                    {
+                        if (playersService.IsRegistered(message.From.Id))
+                        {
+                            await shopService.MoneyAsync(update); 
+                        } else
+                        {
+                            await botClient.SendTextMessageAsync(message.From.Id, "Some function available only for registered users..." +
+                                "\nJust write /reg 😌");
+                        }
+                        return;
+                    }
+                    if (message.Text.ToLower() == "/shop")
+                    {
+                        if (playersService.IsRegistered(message.From.Id))
+                        {
+                            await shopService.ShopAsync(update);
+                        }
+                        else
+                        {
+                            await botClient.SendTextMessageAsync(message.From.Id, "Some function available only for registered users..." +
+                                "\nJust write /reg 😌");
+                        }
+                        return;
+                    }
+                    if (message.Text.ToLower() == "/mysymb")
+                    {
+                        if (playersService.IsRegistered(message.From.Id))
+                        {
+                            await shopService.AvailableSymbol(update);
+                        }
+                        else
+                        {
+                            await botClient.SendTextMessageAsync(message.From.Id, "Some function available only for registered users..." +
+                                "\nJust write /reg 😌");
+                        }
+                        return;
+                    }
                     int number;
                     bool isNumber = int.TryParse(message.Text, out number);
                     if (isNumber)
@@ -145,6 +229,16 @@ namespace TowerOfWitch
                     if (message.Text.Split()[0].ToLower() == "/reject")
                     {
                         gameService.Reject(update);
+                        return;
+                    }
+                    if (message.Text.Split()[0].ToLower() == "/buy")
+                    {
+                        await shopService.Buy(update);
+                        return;
+                    }
+                    if (message.Text.Split()[0].ToLower() == "/set")
+                    {
+                        await shopService.SetSymbol(update);
                         return;
                     }
                 }
@@ -179,6 +273,9 @@ namespace TowerOfWitch
             }
             bot = new TelegramBotClient(token);
             playersService = new PlayersService();
+            purchasesService = new PurchasesService();
+
+            shopService = new ShopService(bot, playersService, purchasesService);
             gameService = new GameService(bot, playersService);
 
             Console.WriteLine("Запущен бот " + bot.GetMeAsync().Result.FirstName);
