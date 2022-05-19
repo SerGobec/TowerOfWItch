@@ -25,6 +25,23 @@ namespace TowerOfWitch.Services
             {12, "🔞" },
             {13, "🌿" }
         };
+
+        public static Dictionary<int, int> Prices = new Dictionary<int, int>
+        {
+            {1, 0 },
+            {2, 0 },
+            {3, 5 },
+            {4, 5 },
+            {5, 5 },
+            {6, 10 },
+            {7, 20 },
+            {8, 20 },
+            {9, 25 },
+            {10, 25 },
+            {11, 25 },
+            {12, 50 },
+            {13, 50 }
+        };
         public static string GetSymbolByCode(int code)
         {
             if (Symbols.ContainsKey(code))

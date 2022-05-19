@@ -10,6 +10,7 @@ namespace TowerOfWitch.Models
     class PlayersDbContext : DbContext
     {
         public DbSet<Player> Players { get; set; } = null!;
+        public DbSet<UserSymbolPair> UserSymbolPairs { get; set; } = null!;
 
         public PlayersDbContext()
         {
