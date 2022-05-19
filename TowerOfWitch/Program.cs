@@ -10,6 +10,7 @@ using Telegram.Bot.Types;
 using TowerOfWitch.Interfaces;
 using TowerOfWitch.Models;
 using TowerOfWitch.Services;
+using Telegram.Bot.Types.Enums;
 
 namespace TowerOfWitch
 {
@@ -88,7 +89,39 @@ namespace TowerOfWitch
                         gameService.Resign(update);
                         return;
                     }
-
+                    if (message.Text.ToLower() == "/create")
+                    {
+                        await bot.SendTextMessageAsync(message.From.Id, "ENG:" +
+                            "\nIf you want send challenge to your friend, after /create write his nickname. For example:" +
+                            "\n<b><i>/create Grey_P</i></b>" +
+                            "\nUKR:" +
+                            "\nЯкщо ви хочете викликати друга на поєдинок, після /create потрібно" +
+                            "написати його username а телеграмі. Наприклад:\n" +
+                            "<b><i>/create Grey_P</i></b>", ParseMode.Html);
+                        return;
+                    }
+                    if (message.Text.ToLower() == "/accept")
+                    {
+                        await bot.SendTextMessageAsync(message.From.Id, "ENG:" +
+                            "\nIf you accept  challenge to your friend, after /accept write his nickname. For example:" +
+                            "\n<b><i>/accept Grey_P</i></b>" +
+                            "\nUKR:" +
+                            "\nЯкщо ви хочете прийняти виклик на поєдинок, після /accept потрібно" +
+                            "написати його username а телеграмі. Наприклад:" +
+                            "\n<b><i>/accept Grey_P</i></b>", ParseMode.Html);
+                        return;
+                    }
+                    if (message.Text.ToLower() == "/reject")
+                    {
+                        await bot.SendTextMessageAsync(message.From.Id, "ENG:" +
+                            "\nIf you reject challenge of your friend, after /reject write his nickname. For example:" +
+                            "\n<b><i>/reject Grey_P</i></b>" +
+                            "\nUKR:" +
+                            "\nЯкщо ви хочете відхилити виклик на поєдинок, після /accept потрібно" +
+                            "написати його username а телеграмі. Наприклад:" +
+                            "\n<b><i>/reject Grey_P</i></b>", ParseMode.Html);
+                        return;
+                    }
                     int number;
                     bool isNumber = int.TryParse(message.Text, out number);
                     if (isNumber)
