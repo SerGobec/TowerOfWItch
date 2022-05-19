@@ -50,6 +50,11 @@ namespace TowerOfWitch.Services
             bool isNumber = byte.TryParse(update.Message.Text.Split()[1], out index);
             if (isNumber)
             {
+                if (!SymbolService.Prices.ContainsKey(index))
+                {
+                    await _bot.SendTextMessageAsync(update.Message.From.Id, "There isn`t this index in shop😳");
+                    return;
+                }
                 if (!_purchasesService.GetAvailableSymbols(update.Message.From.Id).Contains(index))
                 {
                     Player pl = _playersService.GetPlayerByID(update.Message.From.Id);
